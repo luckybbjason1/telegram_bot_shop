@@ -7,11 +7,24 @@ export const translations = {
     userRole: "用户",
     newArrivals: "最新上架",
     addToCart: "加入购物车",
+    outOfStock: "暂时缺货",
+    stockLeft: "库存",
     welcomeTitle: "欢迎来到 缺啥补啥",
     welcomeDesc: "全网最全数字商品，USDT (TRC-20) 自动结算，极速发货。",
     adText: "[广告] 点击加入我们的 VIP 交流群",
     readMore: "阅读更多",
     readLess: "收起",
+    
+    // Sorting
+    sortBy: "排序",
+    sortDefault: "默认",
+    sortPriceAsc: "价格: 低 → 高",
+    sortPriceDesc: "价格: 高 → 低",
+    sortNameAsc: "名称: A → Z",
+    sortNameDesc: "名称: Z → A",
+
+    // Share
+    shareMsg: "🔥 缺啥补啥好物推荐：",
     
     // Purchase & Delivery Guide
     guideTitle: "购物指南",
@@ -29,10 +42,12 @@ export const translations = {
     clickToUpload: "点击上传图片",
     prodName: "商品名称",
     prodPrice: "价格 (USDT)",
+    prodStock: "库存数量",
     prodDesc: "商品描述",
     addProduct: "上架商品",
     productAdded: "商品已上架！",
     fileTooLarge: "文件过大，最大 500MB",
+    invalidStock: "库存必须是大于或等于 0 的整数",
     
     // Cart & Checkout
     yourCart: "您的购物车",
@@ -75,11 +90,24 @@ export const translations = {
     userRole: "사용자",
     newArrivals: "최신 상품",
     addToCart: "장바구니 담기",
+    outOfStock: "품절",
+    stockLeft: "재고",
     welcomeTitle: "환영합니다!",
     welcomeDesc: "최고의 디지털 상품, USDT (TRC-20) 자동 결제, 즉시 배송.",
     adText: "[광고] VIP 커뮤니티 가입하기",
     readMore: "더 보기",
     readLess: "접기",
+
+    // Sorting
+    sortBy: "정렬",
+    sortDefault: "기본",
+    sortPriceAsc: "가격: 낮은순",
+    sortPriceDesc: "가격: 높은순",
+    sortNameAsc: "이름: A → Z",
+    sortNameDesc: "이름: Z → A",
+
+    // Share
+    shareMsg: "🔥 추천 상품:",
 
     // Purchase & Delivery Guide
     guideTitle: "이용 안내",
@@ -97,10 +125,12 @@ export const translations = {
     clickToUpload: "이미지 업로드 클릭",
     prodName: "상품명",
     prodPrice: "가격 (USDT)",
+    prodStock: "재고 수량",
     prodDesc: "상품 설명",
     addProduct: "상품 등록",
     productAdded: "상품이 등록되었습니다!",
     fileTooLarge: "파일이 너무 큽니다 (최대 500MB)",
+    invalidStock: "재고는 0 이상의 정수여야 합니다",
     
     // Cart & Checkout
     yourCart: "장바구니",

@@ -11,6 +11,7 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
+    stock: '10',
     description: '',
     imageUrl: 'https://picsum.photos/400/400?random=10'
   });
@@ -19,10 +20,22 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const stockValue = parseInt(formData.stock);
+    if (isNaN(stockValue) || stockValue < 0) {
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.showAlert(t('invalidStock'));
+        } else {
+            alert(t('invalidStock'));
+        }
+        return;
+    }
+
     const newProduct: Product = {
       id: Date.now().toString(),
       name: formData.name,
       price: parseFloat(formData.price),
+      stock: stockValue,
       description: formData.description,
       imageUrl: previewUrl || formData.imageUrl,
       category: 'cat_General'
@@ -100,17 +113,31 @@ export const AdminPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             />
           </div>
 
-          <div>
-            <label className="block text-sm text-zinc-400 mb-1">{t('prodPrice')}</label>
-            <input 
-              required
-              type="number" 
-              step="0.01"
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              value={formData.price}
-              onChange={e => setFormData({...formData, price: e.target.value})}
-              placeholder="0.00"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+                <label className="block text-sm text-zinc-400 mb-1">{t('prodPrice')}</label>
+                <input 
+                required
+                type="number" 
+                step="0.01"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                value={formData.price}
+                onChange={e => setFormData({...formData, price: e.target.value})}
+                placeholder="0.00"
+                />
+            </div>
+            <div>
+                <label className="block text-sm text-zinc-400 mb-1">{t('prodStock')}</label>
+                <input 
+                required
+                type="number" 
+                min="0"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                value={formData.stock}
+                onChange={e => setFormData({...formData, stock: e.target.value})}
+                placeholder="10"
+                />
+            </div>
           </div>
 
           <div>

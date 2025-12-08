@@ -1,15 +1,16 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../store/AppContext';
-import { X, Copy, CheckCircle, Wallet, AlertCircle, ClipboardPaste } from 'lucide-react';
+import { X, Copy, CheckCircle, Wallet, AlertCircle, ClipboardPaste, Loader2 } from 'lucide-react';
 import { ADMIN_WALLET_ADDRESS } from '../types';
 
 export const CheckoutModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { cart, totalPrice, clearCart, t } = useApp();
+  const { cart, totalPrice, clearCart, decrementStock, t } = useApp();
   const [step, setStep] = useState<'cart' | 'payment'>('cart');
   const [copied, setCopied] = useState(false);
   const [txId, setTxId] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(ADMIN_WALLET_ADDRESS);
@@ -38,8 +39,7 @@ export const CheckoutModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
   };
 
   const handleConfirmPayment = () => {
-    // Validation for TxID (Tron TxIDs are typically 64 chars hex)
-    // We use a loose check > 20 chars to prevent accidental short inputs
+    // Validation
     if (!txId.trim() || txId.length < 20) {
         setError(t('txIdRequired'));
         if(window.Telegram?.WebApp?.HapticFeedback) {
@@ -48,26 +48,35 @@ export const CheckoutModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
         return;
     }
 
-    const payload = {
-        action: 'payment_submitted',
-        amount: totalPrice,
-        currency: 'USDT',
-        network: 'TRC20',
-        items: cart.map(i => ({ id: i.id, name: i.name, quantity: i.quantity })),
-        txId: txId.trim(),
-        timestamp: Date.now()
-    };
+    setIsSubmitting(true);
 
-    if(window.Telegram?.WebApp) {
-        window.Telegram.WebApp.sendData(JSON.stringify(payload));
-        window.Telegram.WebApp.showAlert(t('paymentConfirmed'));
-        window.Telegram.WebApp.close();
-    } else {
-        console.log("Mock Payload:", payload);
-        alert(`${t('paymentAlert')}\nTxID: ${txId}`);
-        clearCart();
-        onClose();
-    }
+    // Simulate network request duration
+    setTimeout(() => {
+        const payload = {
+            action: 'payment_submitted',
+            amount: totalPrice,
+            currency: 'USDT',
+            network: 'TRC20',
+            items: cart.map(i => ({ id: i.id, name: i.name, quantity: i.quantity })),
+            txId: txId.trim(),
+            timestamp: Date.now()
+        };
+
+        // Update local stock for demo purposes
+        decrementStock(cart);
+
+        if(window.Telegram?.WebApp) {
+            window.Telegram.WebApp.sendData(JSON.stringify(payload));
+            window.Telegram.WebApp.showAlert(t('paymentConfirmed'));
+            window.Telegram.WebApp.close();
+        } else {
+            console.log("Mock Payload:", payload);
+            alert(`${t('paymentAlert')}\nTxID: ${txId}`);
+            clearCart();
+            onClose();
+        }
+        setIsSubmitting(false);
+    }, 1500);
   };
 
   if (cart.length === 0) {
@@ -84,7 +93,11 @@ export const CheckoutModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
           <h2 className="text-xl font-bold text-white">
             {step === 'cart' ? t('yourCart') : t('checkoutTitle')}
           </h2>
-          <button onClick={onClose} className="p-2 bg-zinc-800 rounded-full hover:bg-zinc-700 text-white">
+          <button 
+            onClick={onClose} 
+            disabled={isSubmitting}
+            className="p-2 bg-zinc-800 rounded-full hover:bg-zinc-700 text-white disabled:opacity-50"
+          >
             <X size={20} />
           </button>
         </div>
@@ -163,11 +176,13 @@ export const CheckoutModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
                             setTxId(e.target.value);
                             setError('');
                         }}
+                        disabled={isSubmitting}
                         placeholder={t('txIdPlaceholder')}
-                        className={`w-full bg-zinc-950 border ${error ? 'border-red-500' : 'border-zinc-800 focus:border-emerald-500'} rounded-xl p-3 pr-12 text-white text-sm focus:outline-none transition-all`}
+                        className={`w-full bg-zinc-950 border ${error ? 'border-red-500' : 'border-zinc-800 focus:border-emerald-500'} rounded-xl p-3 pr-12 text-white text-sm focus:outline-none transition-all disabled:opacity-50`}
                     />
                     <button 
                         onClick={handlePaste}
+                        disabled={isSubmitting}
                         className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
                         title={t('paste')}
                     >
@@ -184,14 +199,21 @@ export const CheckoutModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
             {/* Action Button */}
             <button 
               onClick={handleConfirmPayment}
+              disabled={isSubmitting || txId.length < 5}
               className={`w-full font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg ${
-                  txId.length > 5 
+                  txId.length > 5 && !isSubmitting
                   ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/20 active:scale-95' 
                   : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
               }`}
             >
-              <Wallet size={20} />
-              {t('iHavePaid')}
+              {isSubmitting ? (
+                  <Loader2 size={20} className="animate-spin" />
+              ) : (
+                  <>
+                    <Wallet size={20} />
+                    {t('iHavePaid')}
+                  </>
+              )}
             </button>
           </div>
         )}

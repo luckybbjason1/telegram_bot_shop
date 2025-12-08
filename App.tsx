@@ -1,19 +1,23 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { AppProvider, useApp } from './store/AppContext';
 import { Navbar } from './components/Navbar';
 import { AdminPanel } from './components/AdminPanel';
 import { CheckoutModal } from './components/CheckoutModal';
 import { AboutModal } from './components/AboutModal';
 import { ProductCard } from './components/ProductCard';
-import { Plus, Info, CreditCard, Gift } from 'lucide-react';
+import { ProductSkeleton } from './components/ProductSkeleton';
+import { Plus, Info, CreditCard, Gift, ArrowUpDown } from 'lucide-react';
 import { TranslationKey } from './translations';
 
+type SortOption = 'default' | 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc';
+
 const StoreContent: React.FC = () => {
-  const { products, addToCart, isAdmin, t } = useApp();
+  const { products, addToCart, isAdmin, isLoading, t } = useApp();
   const [showCart, setShowCart] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [sortOption, setSortOption] = useState<SortOption>('default');
 
   // Helper to translate category if it exists in translation map, otherwise return as is
   const getCategoryName = (cat: string) => {
@@ -23,6 +27,24 @@ const StoreContent: React.FC = () => {
     }
     return cat;
   };
+
+  // Sort Logic
+  const sortedProducts = useMemo(() => {
+    // Create a shallow copy to sort
+    const items = [...products];
+    switch (sortOption) {
+      case 'price_asc':
+        return items.sort((a, b) => a.price - b.price);
+      case 'price_desc':
+        return items.sort((a, b) => b.price - a.price);
+      case 'name_asc':
+        return items.sort((a, b) => a.name.localeCompare(b.name));
+      case 'name_desc':
+        return items.sort((a, b) => b.name.localeCompare(a.name));
+      default:
+        return items;
+    }
+  }, [products, sortOption]);
 
   return (
     <div className="min-h-screen bg-zinc-950 pb-24">
@@ -71,24 +93,51 @@ const StoreContent: React.FC = () => {
         </div>
       </div>
 
-      {/* Product Grid */}
+      {/* Product Grid Header with Sort */}
       <div className="max-w-4xl mx-auto px-4 py-6">
-        <h2 className="text-xl font-bold text-white mb-4">{t('newArrivals')}</h2>
+        <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-white">{t('newArrivals')}</h2>
+            
+            <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none text-zinc-400">
+                    <ArrowUpDown size={14} />
+                </div>
+                <select
+                    value={sortOption}
+                    onChange={(e) => setSortOption(e.target.value as SortOption)}
+                    className="bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs rounded-lg block pl-8 pr-2 py-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none appearance-none cursor-pointer hover:border-zinc-700 transition-colors"
+                >
+                    <option value="default">{t('sortDefault')}</option>
+                    <option value="price_asc">{t('sortPriceAsc')}</option>
+                    <option value="price_desc">{t('sortPriceDesc')}</option>
+                    <option value="name_asc">{t('sortNameAsc')}</option>
+                    <option value="name_desc">{t('sortNameDesc')}</option>
+                </select>
+            </div>
+        </div>
+
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {products.map((product) => (
-            <ProductCard 
-                key={product.id} 
-                product={product} 
-                addToCart={addToCart} 
-                getCategoryName={getCategoryName}
-                t={t}
-            />
-          ))}
+          {isLoading ? (
+            // Render 6 skeletons while loading
+            Array.from({ length: 6 }).map((_, index) => (
+              <ProductSkeleton key={index} />
+            ))
+          ) : (
+            sortedProducts.map((product) => (
+              <ProductCard 
+                  key={product.id} 
+                  product={product} 
+                  addToCart={addToCart} 
+                  getCategoryName={getCategoryName}
+                  t={t}
+              />
+            ))
+          )}
         </div>
       </div>
 
       {/* Admin Floating Action Button */}
-      {isAdmin && (
+      {isAdmin && !isLoading && (
         <button
           onClick={() => setShowAdmin(true)}
           className="fixed bottom-6 right-6 w-14 h-14 bg-emerald-600 rounded-full shadow-2xl shadow-emerald-900/50 flex items-center justify-center text-white z-30 hover:scale-105 transition-transform"

@@ -3,6 +3,7 @@ export interface Product {
   id: string;
   name: string;
   price: number; // In USDT
+  stock: number;
   description: string;
   imageUrl: string;
   category: string;
@@ -43,6 +44,7 @@ declare global {
         close: () => void;
         sendData: (data: string) => void;
         showAlert: (message: string) => void;
+        openTelegramLink: (url: string) => void;
       };
     };
   }
