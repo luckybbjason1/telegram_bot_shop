@@ -1,7 +1,8 @@
 {
   "name": "telegram-mall-bot",
   "private": true,
-  "version": "0.0.1",
+  "version": "1.0.0",
+  "description": "Telegram 高端 USDT 商城小程序 (React + Vite)",
   "type": "module",
   "scripts": {
     "dev": "vite",
